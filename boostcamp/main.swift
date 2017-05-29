@@ -8,6 +8,11 @@
 
 import Foundation
 
+//결과 출력 위치, 입력 위치
+var homeDirectory = NSHomeDirectory()
+let newLocation = homeDirectory + "/result.txt"
+var dataPath = homeDirectory + "/students.json"
+
 
 //성적 분류 함수
 func gradeCheck(score:Double) -> String{
@@ -29,6 +34,7 @@ func gradeCheck(score:Double) -> String{
     
 }
 
+//통과 했는지에 대한 판별 함수
 func isPassed(grade:String) -> Bool{
     
     switch grade {
@@ -51,14 +57,17 @@ func roundPoint(number:Double) -> Double{
 }
 
 
-let newLocation = "/Users/kwonbyungsoo/result.txt"
+
+
 var finalResult = "성적결과표"
+
+//학생 : 학점 으로 저장될 배열
 var student:[String:String] = [:]
-var homeDirectory = NSHomeDirectory()
-var dataPath = homeDirectory + "/students.json"
+
 var allAverage:Double = 0
+
 var allSumOfScore:Double = 0
-print(dataPath)
+
 do {
     let data = try Data(contentsOf: URL(fileURLWithPath: dataPath))
     let json = try JSONSerialization.jsonObject(with: data, options: [])
@@ -71,10 +80,14 @@ do {
         for (index,value) in array.enumerated() {
             
             var name:String = value["name"] as! String
+            
+            //자리수를 맞추기 위해 4자리 이름에 공백을 하나 삽입..
             if name.characters.count < 5{
                 name.append(" ")
             }
             let grade = array[index]["grade"] as? [String:Int]
+            
+            //과목 수
             let count = grade?.count
             var scoreSum:Double = 0
             var averageScore:Double = 0
@@ -117,29 +130,38 @@ let sortedStudent = student.sorted(by: { (left : (key: String, value: String), r
 })
 
 
-finalResult = "성적결과표\n\n" +
-    "전체 평균 : \(allAverage)\n\n" +
-"개인별 학점\n"
-
-
-//TODO: 흠....
-//let finalScore = sortedStudent.map { ( item:(key: String, value: String)) -> String in
-//    return ("\(item.key)      : \(item.value)\n")
-//    }
-//}
-
+finalResult = "성적결과표\n\n" + "전체 평균 : \(allAverage)\n\n" + "개인별 학점\n"
 
 for item in sortedStudent{
     
-    finalResult += ("\(item.key)      : \(item.value)\n")
+        finalResult += ("\(item.key)      : \(item.value)\n")
 }
 
-finalResult += "수료생\n"
-for item in sortedStudent{
-    if isPassed(grade: item.value){
-        finalResult += "\(item.key)"
+finalResult += "\n수료생\n"
+
+//앞에서 삽입된 4자리 이름의 공백 하나를 삭제해준다.
+var newSorted = sortedStudent.filter { (item: (key: String, value: String)) -> Bool in
+        return isPassed(grade: item.value)
+    }.map { (item: (key: String, value: String)) -> String in
+        if item.key.contains(" "){
+            return item.key.substring(to: item.key.index(before: item.key.endIndex))
+        }else {
+            return item.key
+        }
+}
+
+
+var isFirst:Bool = true
+
+for (index,value) in newSorted.enumerated(){
+
+    if isFirst{
+        finalResult += "\(newSorted[index])"
+        isFirst = false
+    }else {
+        finalResult += ", \(newSorted[index])"
     }
-    
+
 }
 
 
