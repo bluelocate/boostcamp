@@ -14,7 +14,7 @@ let newLocation = homeDirectory + "/result.txt"
 var dataPath = homeDirectory + "/students.json"
 
 
-//성적 분류 함수
+/**성적 분류 함수**/
 func gradeCheck(score:Double) -> String{
     
     switch score {
@@ -34,7 +34,7 @@ func gradeCheck(score:Double) -> String{
     
 }
 
-//통과 했는지에 대한 판별 함수
+/**통과 했는지에 대한 판별 함수**/
 func isPassed(grade:String) -> Bool{
     
     switch grade {
@@ -45,7 +45,7 @@ func isPassed(grade:String) -> Bool{
     }
 }
 
-//소수점2자리를 만드는 함수
+/**소수점2자리를 만드는 함수**/
 func roundPoint(number:Double) -> Double{
     
     
@@ -64,17 +64,17 @@ var finalResult = "성적결과표"
 //학생 : 학점 으로 저장될 배열
 var student:[String:String] = [:]
 
+//모든 학생 성적 평균
 var allAverage:Double = 0
-
+//모든 학생의 점수
 var allSumOfScore:Double = 0
 
 do {
+    
     let data = try Data(contentsOf: URL(fileURLWithPath: dataPath))
     let json = try JSONSerialization.jsonObject(with: data, options: [])
+    
     if let array = json as? [[String:Any]]{
-        
-        
-        
         
         //grade 안에 있는 성적을 꺼내서 계산하자
         for (index,value) in array.enumerated() {
@@ -122,12 +122,8 @@ do {
     print("something error")
 }
 
-print(student)
 
-
-let sortedStudent = student.sorted(by: { (left : (key: String, value: String), right: (key: String, value: String)) -> Bool in
-    return left.key < right.key
-})
+let sortedStudent = student.sorted{$0.0<$1.0}
 
 
 finalResult = "성적결과표\n\n" + "전체 평균 : \(allAverage)\n\n" + "개인별 학점\n"
@@ -140,14 +136,13 @@ for item in sortedStudent{
 finalResult += "\n수료생\n"
 
 //앞에서 삽입된 4자리 이름의 공백 하나를 삭제해준다.
-var newSorted = sortedStudent.filter { (item: (key: String, value: String)) -> Bool in
-        return isPassed(grade: item.value)
-    }.map { (item: (key: String, value: String)) -> String in
-        if item.key.contains(" "){
-            return item.key.substring(to: item.key.index(before: item.key.endIndex))
-        }else {
-            return item.key
-        }
+var newSorted = sortedStudent.filter {
+         isPassed(grade: $0.1)}.map { (item: (key: String, value: String)) -> String in
+            if item.key.contains(" "){
+                return item.key.substring(to: item.key.index(before: item.key.endIndex))
+            }else {
+                return item.key
+            }
 }
 
 
